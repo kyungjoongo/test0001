@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="PeterpanMapper">
+
+
+	
+	<select id="select_query_manager_userquery" resultType="hashmap">
+	
+	
+		select * from query_manager_userquery order by ${sortColumn} ${sortOrder} limit #{startNo} ,  #{pageSize}
+	
+	</select>
+	
+	
+	<select id="select_query_manager_userquery_count" resultType="int">
+	
+	
+		select count(*) from query_manager_userquery 
+	
+	</select>
+
+
+	<select id="select_query_manager_userquery_sort_desc">
+
+
+		select * from query_manager_userquery order by id desc limit 20,10
+
+
+	</select>
+	
+	
+	
+</mapper>
+

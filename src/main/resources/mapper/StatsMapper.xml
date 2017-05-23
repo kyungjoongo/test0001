@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?> <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="StatsMapper">
+
+    <select id="getOne" resultType="hashmap">
+
+
+        SELECT
+            id,
+            query_qc,
+            pub_date
+        FROM query_manager_userquery
+        WHERE id = #{id}
+
+    </select>
+
+
+    <!--오늘의 qc_count증가량을 insert한다-->
+    <insert id="insertTodaysQcCountById">
+
+        INSERT INTO query_manager_userquery_count_by_date (user_query_id, qc_counted_date, query_count)
+        VALUES (#{id}, #{todaysDate}, #{todaysQcCount})
+
+    </insert>
+
+
+    <!--어제 날짜까지의 의 qc_count를 fetch-->
+    <select id="getOne_query_manager_userquery_count_until_yesterday" resultType="hashmap">
+
+
+        SELECT
+            sum(query_count) AS qc_count_sum,
+            dd.*
+        FROM query_manager_userquery_count_by_date dd
+        WHERE
+            dd.qc_counted_date &lt;= #{yesterdayDate}
+
+            AND user_query_id = #{id}
+
+    </select>
+
+
+    <select id="getList" resultType="com.nda.model.Stats">
+
+        select * from (
+
+        select sum(count.query_count) as qc_sum, aa.* from query_manager_userquery aa LEFT JOIN
+        query_manager_userquery_count_by_date count on
+        aa.id = count.user_query_id
+
+        <if test="startDate != '' and endDate !='' ">
+            and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
+        </if>
+
+        GROUP BY count.user_query_id
+
+        ) aaa
+
+        where 1=1
+
+        <if test="searchWord != '' and searchColumn =='query_text' ">
+            and aaa.query_text LIKE #{searchWord}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='query_response' ">
+            and aaa.query_response LIKE #{searchWord}
+        </if>
+
+        <if test="query_type != '' and query_type !=null ">
+            and aaa.query_type = #{query_type}
+        </if>
+
+        <if test="query_continuation != ''  and query_continuation !=null ">
+            and aaa.query_continuation = #{query_continuation}
+        </if>
+
+        <if test="query_work_status != ''  and query_work_status !=null ">
+            and aaa.query_work_status = #{query_work_status}
+        </if>
+
+        <if test="query_route != '' and query_route !=null ">
+            and aaa.query_route = #{query_route}
+        </if>
+
+        <if test="pub_date != '' and pub_date !=null">
+            and aaa.pub_date &gt; #{pub_date}
+        </if>
+
+
+        order by ${sortColumn} ${sortOrder}
+
+        <if test="pageSize != '' and pageSize !=null ">
+            LIMIT #{startNo} , #{pageSize}
+        </if>
+
+
+
+
+
+    </select>
+
+    <select id="getListTotalCount" resultType="int">
+
+
+        select count(*) from query_manager_userquery aaa
+
+
+        where 1=1
+
+
+        <if test="searchWord != '' and searchColumn =='query_text' ">
+            and query_text LIKE #{searchWord}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='query_response' ">
+            and query_response LIKE #{searchWord}
+        </if>
+
+        <if test="query_type != ''">
+            and query_type LIKE #{query_type}
+        </if>
+
+        <if test="query_continuation != ''">
+            and query_continuation = #{query_continuation}
+        </if>
+
+        <if test="query_work_status != ''">
+            and query_work_status = #{query_work_status}
+        </if>
+
+        <if test="query_route != ''">
+            and query_route = #{query_route}
+        </if>
+
+        <if test="pub_date != ''">
+            and pub_date &gt; #{pub_date}
+        </if>
+
+
+    </select>
+
+
+
+
+    <select id="getQueryType" resultType="string">
+
+
+        SELECT DISTINCT query_type
+        FROM query_manager_userquery
+
+
+    </select>
+
+
+    <select id="getListAll" resultType="hashmap">
+
+        SELECT *
+        FROM query_manager_userquery
+
+        /* order by ${sortColumn} ${sortOrder}*/
+
+
+    </select>
+
+
+    <insert id="insertOne" parameterType="hashmap">
+
+        INSERT INTO query_manager_userquery (query_text, query_response, query_continuation, worker, pub_date, update_date, group_id)
+
+        VALUES (#{query_text}, #{query_response}, 1, 'kyungjoon', now(), now(), 1)
+    </insert>
+
+
+    <delete id="deleteOne" parameterType="string">
+
+        DELETE FROM query_manager_userquery
+        WHERE id = #{id}
+
+    </delete>
+
+
+    <update id="updateOne" parameterType="hashmap">
+
+        UPDATE query_manager_userquery
+        SET query_text = #{query_text}, query_response = #{query_response}
+        WHERE id = #{id}
+
+    </update>
+
+
+</mapper>
+

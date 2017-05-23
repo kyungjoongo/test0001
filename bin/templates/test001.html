@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+        "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Title</title>
+
+    <script>
+
+        var template1 =
+            { "groupOp": "AND",
+                "rules": [
+                    { "field": "b.name", "op": "bw", "data": "Client 1" },
+                    { "field": "a.amount", "op": "gt", "data": "20"}
+                ]
+            };
+
+        var template2 =
+            { "groupOp": "AND",
+                "rules": [
+                    { "field": "b.name", "op": "eq", "data": "Client 2" },
+                    { "field": "a.id", "op": "le", "data": "10"}
+                ]
+            } ;
+
+        $("#grps3").jqGrid('navGrid', '#pgrps3',
+            {edit: false, add: false, del: false},
+            {},
+            {},
+            {},
+            {
+                multipleSearch: true,
+                multipleGroup: false,
+                showQuery: false
+                // set the names of the template
+             //   "tmplNames": ["Template One", "Template Two"],
+                // set the template contents
+             //   "tmplFilters": [template1, template2]
+            }//
+        );
+
+    </script>
+</head>
+<body>
+
+
+</body>
+</html>
