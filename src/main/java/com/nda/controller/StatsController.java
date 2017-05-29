@@ -80,12 +80,8 @@ public class StatsController {
 
         int startNo = (stats.getPage() - 1) * stats.getRows();
 
-
-
         stats.setStartNo(startNo);
         stats.setPub_date(pub_date);
-
-
 
         List<Stats> arrList = statsDAO.getList(stats);
         int totalCount = statsDAO.getListTotalCount(stats);
@@ -182,7 +178,7 @@ public class StatsController {
             ,@ModelAttribute Stats stats
     ) {
 
-        String outputFileName = "TinkerbellExcelExport" + CommonUtils.getTodayDate();
+        String outputFileName = "NaverDialogAppStatsExcelExport" + CommonUtils.getTodayDate();
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Set-Cookie", " fileDownload=true; path=/");
         response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName + ".xls");
@@ -225,7 +221,7 @@ public class StatsController {
             ,@ModelAttribute Stats stats
     ) throws Exception {
 
-        String outputFileName = "TinkerbellCSVExport" + CommonUtils.getTodayDate();
+        String outputFileName = "NaverDialogAppStatsCVSExport" + CommonUtils.getTodayDate();
         response.setContentType("application/vnd.ms-excel");
         response.setHeader("Set-Cookie", " fileDownload=true; path=/");
         response.setHeader("Content-Disposition", "attachment; filename=" + outputFileName + ".CSV");
@@ -243,7 +239,7 @@ public class StatsController {
             OutputStream outputStream = response.getOutputStream();
             List<Stats> arrList = statsDAO.getList(stats);
 
-            String outputResult = CSVUtils.makeCSVString(arrList);
+            String outputResult = CSVUtils.makeCSVString(arrList, stats.getStartDate(), stats.getEndDate());
 
             outputStream.write(outputResult.getBytes());
             outputStream.flush();

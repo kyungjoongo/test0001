@@ -17,7 +17,7 @@ apply plugin: 'war'
 
 war {
 	baseName = 'NaverDialogApplication'
-	version =  '0.7.5'
+	version =  '0.9.7.5'
 }
 
 version = '0.0.1-SNAPSHOT'

@@ -1,8 +1,8 @@
 package com.nda.util;
 
 
-
 import com.nda.model.Stats;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -15,29 +15,77 @@ public class CSVUtils {
      * @param statsList
      * @return
      */
-    public static String makeCSVString(List<Stats> statsList) {
+    public static String makeCSVString(List<Stats> statsList, String startDate, String endDate) {
 
-        StringBuffer sb = new StringBuffer();
+        StringBuffer stringBuffer = new StringBuffer();
 
-        String header = "질의문장,응답문장\n";
+        String headerDate = startDate + "~" + endDate + "\n";
 
-        sb.append(header);
+        String header = "질의문장,응답문장, 쿼리카운트, 작업자\n";
+
+        stringBuffer.append(headerDate);
+        stringBuffer.append(header);
 
         for (Stats statsOne : statsList) {
 
-            String query_text = (String) statsOne.getQuery_text();
-            String query_response = (String) statsOne.getQuery_response();
+            //기존라우팅
+            //변경라우팅
+            //query_type
+            //query_continuation
+            //query_work_status
+            //일괄블럭.
+            //query_blocked
+            //qm라우팅
+            //worker
+            //qcCount
+            //날짜
+            int id = (int) statsOne.getId();
+            String queryText = (String) statsOne.getQuery_text();
+            String queryResponse = (String) statsOne.getQuery_response();
+            String queryRoute = statsOne.getQuery_route();
+            queryRoute = CommonUtils.getRouteName(queryRoute);
 
-            int qc_sum = (int) statsOne.getQc_sum();
 
-            String worker = (String) statsOne.getWorker();
+            String outputRoute = statsOne.getQuery_route_by_date();
+            outputRoute = CommonUtils.getRouteName(outputRoute);
 
-            String tempStr = query_text + "," + query_response + "," + worker + "," +qc_sum +   "\n";
-            sb.append(tempStr);
+
+            String queryType = statsOne.getQuery_type();
+            String queryContinuation = statsOne.getQuery_continuation();
+            String queryWorkStatus = statsOne.getQuery_work_status();
+            int queryBlocked = statsOne.getQuery_blocked();
+            String strQueryBlocked= "";
+            if(queryBlocked==1 ){
+                strQueryBlocked= "true";
+            }else{
+                strQueryBlocked= "false";
+            }
+
+            String qmQueryRoute = statsOne.getQuery_route_by_date();
+            qmQueryRoute = CommonUtils.getRouteName(qmQueryRoute);
+            String worker = statsOne.getWorker();
+            int qcCount = (int) statsOne.getQc_sum();
+            String pubDate = statsOne.getPub_date();
+
+            String cvsString = id
+                    + "," + queryText
+                    + "," + queryResponse
+                    + "," + queryRoute
+                    + "," + outputRoute
+                    + "," + queryType
+                    + "," + queryContinuation
+                    + "," + queryWorkStatus
+                    + "," + strQueryBlocked
+                    + "," + qmQueryRoute
+                    + "," + worker
+                    + "," + qcCount
+                    + "," + pubDate
+                    + "\n";
+            stringBuffer.append(cvsString);
 
         }
 
-        return sb.toString();
+        return stringBuffer.toString();
     }
 
 

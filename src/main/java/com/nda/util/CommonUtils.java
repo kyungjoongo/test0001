@@ -84,4 +84,24 @@ public class CommonUtils {
         return sdf.format(calendar.getTime()); //format the calendar date/time
     }
 
+    /**
+     * 0,1,2,3 --> P1,P2,AE,95로 라우터 네임을 바꿔준다.
+     * @param query_route_by_date
+     * @return
+     */
+    public static String getRouteName(String query_route_by_date) {
+
+        if (query_route_by_date.equals("0") ){
+            query_route_by_date= "P1";
+        }else if (query_route_by_date.equals("1") ){
+            query_route_by_date= "P2";
+        }else if (query_route_by_date.equals("2") ){
+            query_route_by_date= "AE";
+        }else if (query_route_by_date.equals("3") ){
+            query_route_by_date= "P5";
+        }
+
+        return  query_route_by_date;
+    }
+
 }

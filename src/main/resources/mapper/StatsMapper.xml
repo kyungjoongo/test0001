@@ -2,24 +2,22 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="StatsMapper">
 
-    <select id="getOne" resultType="hashmap">
+    <select id="getOne" resultType="com.nda.model.Stats">
 
 
         SELECT
-            id,
-            query_qc,
-            pub_date
+            *
         FROM query_manager_userquery
         WHERE id = #{id}
 
     </select>
 
 
-    <!--오늘의 qc_count증가량을 insert한다-->
-    <insert id="insertTodaysQcCountById">
+    <!--오늘의 qc_count증가량 and 날짜별 query_work_stats을 insert한다-->
+    <insert id="insertTodaysQcCountAndQueryWorkStatusByDate">
 
-        INSERT INTO query_manager_userquery_count_by_date (user_query_id, qc_counted_date, query_count)
-        VALUES (#{id}, #{todaysDate}, #{todaysQcCount})
+        INSERT INTO query_manager_userquery_count_by_date (user_query_id, qc_counted_date, query_count, query_work_status, query_route)
+        VALUES (#{id}, #{todaysDate}, #{todaysQcCount}, #{query_work_status}, #{query_route})
 
     </insert>
 
@@ -39,22 +37,31 @@
 
     </select>
 
-
     <select id="getList" resultType="com.nda.model.Stats">
 
-        select * from (
 
-        select sum(count.query_count) as qc_sum, aa.* from query_manager_userquery aa LEFT JOIN
-        query_manager_userquery_count_by_date count on
-        aa.id = count.user_query_id
+        select aaa.* from (
 
-        <if test="startDate != '' and endDate !='' ">
-            and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
-        </if>
+            select
 
-        GROUP BY count.user_query_id
+                IFNULL( (select sum(count.query_count) from query_manager_userquery_count_by_date count where 1=1     and user.id = count.user_query_id
+                    <if test="startDate != '' and endDate !='' ">
+                        and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
+                    </if>
+                    GROUP BY count.user_query_id) , 0) as qc_sum
+                , user.*
+                , ctrl.query_blocked
+                , ctrl.output_route
+                ,IFNULL(  (select query_work_status from query_manager_userquery_count_by_date count where 1=1 and user.id = count.user_query_id  and count.qc_counted_date &lt;= #{endDate} order by count.qc_counted_date desc limit 1),0)
+                as query_work_status_by_date
 
-        ) aaa
+                ,IFNULL(  (select query_route from query_manager_userquery_count_by_date count where 1=1 and user.id = count.user_query_id  and count.qc_counted_date &lt;= #{endDate} order by count.qc_counted_date desc limit 1),0)
+                as query_route_by_date
+
+
+            from query_manager_userquery user left JOIN query_manager_querycontrol ctrl on ctrl.user_query_id = user.id
+
+            ) aaa
 
         where 1=1
 
@@ -75,11 +82,16 @@
         </if>
 
         <if test="query_work_status != ''  and query_work_status !=null ">
-            and aaa.query_work_status = #{query_work_status}
+            and aaa.query_work_status_by_date = #{query_work_status}
         </if>
 
         <if test="query_route != '' and query_route !=null ">
-            and aaa.query_route = #{query_route}
+            and aaa.query_route_by_date = #{query_route}
+        </if>
+
+
+        <if test="output_route != '' and output_route !=null ">
+            and aaa.output_route = #{output_route}
         </if>
 
         <if test="pub_date != '' and pub_date !=null">
@@ -89,15 +101,17 @@
 
         order by ${sortColumn} ${sortOrder}
 
-        <if test="pageSize != '' and pageSize !=null ">
-            LIMIT #{startNo} , #{pageSize}
+        <if test="rows != '' and rows !=null ">
+            LIMIT #{startNo} , #{rows}
         </if>
 
 
 
-
-
     </select>
+
+
+
+
 
     <select id="getListTotalCount" resultType="int">
 
@@ -138,8 +152,6 @@
 
 
     </select>
-
-
 
 
     <select id="getQueryType" resultType="string">
@@ -190,3 +202,74 @@
 
 </mapper>
 
+<!--
+
+
+<select id="getList" resultType="com.nda.model.Stats">
+
+select * from (
+
+select sum(count.query_count) as qc_sum, aa.*
+, con.query_blocked
+,con.output_route
+
+
+from query_manager_userquery aa LEFT JOIN
+query_manager_userquery_count_by_date count on
+aa.id = count.user_query_id
+
+<if test="startDate != '' and endDate !='' ">
+    and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
+</if>
+
+left JOIN query_manager_querycontrol con on con.user_query_id = aa.id
+
+GROUP BY count.user_query_id
+
+) aaa
+
+where 1=1
+
+<if test="searchWord != '' and searchColumn =='query_text' ">
+    and aaa.query_text LIKE #{searchWord}
+</if>
+
+<if test="searchWord != '' and searchColumn =='query_response' ">
+    and aaa.query_response LIKE #{searchWord}
+</if>
+
+<if test="query_type != '' and query_type !=null ">
+    and aaa.query_type = #{query_type}
+</if>
+
+<if test="query_continuation != ''  and query_continuation !=null ">
+    and aaa.query_continuation = #{query_continuation}
+</if>
+
+<if test="query_work_status != ''  and query_work_status !=null ">
+    and aaa.query_work_status = #{query_work_status}
+</if>
+
+<if test="query_route != '' and query_route !=null ">
+    and aaa.query_route = #{query_route}
+</if>
+
+
+<if test="output_route != '' and output_route !=null ">
+    and aaa.output_route = #{output_route}
+</if>
+
+<if test="pub_date != '' and pub_date !=null">
+    and aaa.pub_date &gt; #{pub_date}
+</if>
+
+
+order by ${sortColumn} ${sortOrder}
+
+<if test="rows != '' and rows !=null ">
+    LIMIT #{startNo} , #{rows}
+</if>
+
+
+</select>
+-->

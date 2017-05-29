@@ -21,9 +21,11 @@ public class StatsDAO {
     private SqlSession sqlSession;
 
 
-    @Autowired
+    /*@Autowired
     @Qualifier("secondSqlSessionTemplate")
-    private SqlSession secondSqlSession;
+    private SqlSession secondSqlSession;*/
+
+
 
     public List<Stats> getList(Stats stats) {
         List<Stats> arrList = sqlSession.selectList("StatsMapper.getList", stats);
@@ -75,8 +77,8 @@ public class StatsDAO {
     }
 
 
-    public Map<String, Object> getOne(Stats stats) {
-        Map<String, Object> resultOne = sqlSession.selectOne("StatsMapper.getOne", stats);
+    public Stats getOne(Stats stats) {
+        Stats resultOne = sqlSession.selectOne("StatsMapper.getOne", stats);
 
         return resultOne;
     }
@@ -108,10 +110,10 @@ public class StatsDAO {
     }
 
 
-    public int insertTodaysQcCountById(Stats stats) {
+    public int insertTodaysQcCountAndQueryWorkStatusByDate(Stats stats) {
 
 
-        int result = sqlSession.insert("StatsMapper.insertTodaysQcCountById", stats);
+        int result = sqlSession.insert("StatsMapper.insertTodaysQcCountAndQueryWorkStatusByDate", stats);
 
         return result;
 

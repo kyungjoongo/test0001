@@ -3,13 +3,50 @@ package com.nda.model;
 
 public class Stats {
 
+    public int qc_sum;
+    public int startNo;
+    public int pageSize;
+    public int page;
+    public String SortColumn;
+    public String SortOrder;
+    private String searchWord;
+    private String searchColumn;
+    private String startDate;
+    private String endDate;
+    private int todaysQcCount;
+    private int qcCount;
+    private int rows;
+    private int id;
+    private String query_text;
+    private String pub_date;
+    private String query_text_and_response;
+    private String query_continuation;
+    private String query_response;
+    private String query_route;
+    private String output_route;
+    private String query_type;
+    private String query_blockkeywords;
+    private String query_work_status;
+    private String query_route_by_date;
+    private String worker;
+    private String query_qc;
+    private String query_work_type;
+    private String serviceCode;
+    private String update_date;
+    private String yesterdayDate;
+    private String todaysDate;
+    private int query_blocked;
+    private String query_work_status_by_date;
+
+
+
 
     public Stats() {
         this.startNo = 0;
         this.pageSize = 0;
         this.page = 0;
         SortColumn = "id";
-        SortOrder = "desc";
+        SortOrder = "asc";
         this.searchWord = "";
         this.searchColumn = "";
         this.startDate = "";
@@ -34,10 +71,11 @@ public class Stats {
         this.query_work_type = "";
         this.serviceCode = "";
         this.update_date = "";
+        this.output_route = "";
     }
 
 
-    public int qc_sum;
+
 
     public int getQc_sum() {
         return qc_sum;
@@ -47,39 +85,37 @@ public class Stats {
         this.qc_sum = qc_sum;
     }
 
-    public int startNo;
-    public int pageSize;
-    public int page;
-    public String SortColumn;
-    public String SortOrder;
-    private String searchWord;
-    private String searchColumn;
-    private String startDate;
-    private String endDate;
-    private int todaysQcCount;
-    private int qcCount;
-    private int rows;
-    private int id;
-    private String query_text;
-    private String pub_date;
-    private String query_text_and_response;
-    private String query_continuation;
-    private String query_response;
-    private String query_route;
-    private String query_type;
-    private String query_blockkeywords;
-    private String query_work_status;
-    private String worker;
-    private String query_qc;
-    private String query_work_type;
-    private String serviceCode;
-    private String update_date;
-    private String yesterdayDate;
-    private String todaysDate;
+    public String getQuery_route_by_date() {
+        return query_route_by_date;
+    }
 
+    public void setQuery_route_by_date(String query_route_by_date) {
+        this.query_route_by_date = query_route_by_date;
+    }
 
+    public String getQuery_work_status_by_date() {
+        return query_work_status_by_date;
+    }
 
+    public void setQuery_work_status_by_date(String query_work_status_by_date) {
+        this.query_work_status_by_date = query_work_status_by_date;
+    }
 
+    public String getOutput_route() {
+        return output_route;
+    }
+
+    public void setOutput_route(String output_route) {
+        this.output_route = output_route;
+    }
+
+    public int getQuery_blocked() {
+        return query_blocked;
+    }
+
+    public void setQuery_blocked(int query_blocked) {
+        this.query_blocked = query_blocked;
+    }
 
     public int getRows() {
         return rows;
@@ -317,13 +353,11 @@ public class Stats {
         SortOrder = sortOrder;
     }
 
-
-
-
     @Override
     public String toString() {
         return "Stats{" +
-                "startNo=" + startNo +
+                "qc_sum=" + qc_sum +
+                ", startNo=" + startNo +
                 ", pageSize=" + pageSize +
                 ", page=" + page +
                 ", SortColumn='" + SortColumn + '\'' +
@@ -342,9 +376,11 @@ public class Stats {
                 ", query_continuation='" + query_continuation + '\'' +
                 ", query_response='" + query_response + '\'' +
                 ", query_route='" + query_route + '\'' +
+                ", output_route='" + output_route + '\'' +
                 ", query_type='" + query_type + '\'' +
                 ", query_blockkeywords='" + query_blockkeywords + '\'' +
                 ", query_work_status='" + query_work_status + '\'' +
+                ", query_route_by_date='" + query_route_by_date + '\'' +
                 ", worker='" + worker + '\'' +
                 ", query_qc='" + query_qc + '\'' +
                 ", query_work_type='" + query_work_type + '\'' +
@@ -352,6 +388,8 @@ public class Stats {
                 ", update_date='" + update_date + '\'' +
                 ", yesterdayDate='" + yesterdayDate + '\'' +
                 ", todaysDate='" + todaysDate + '\'' +
+                ", query_blocked=" + query_blocked +
+                ", query_work_status_by_date='" + query_work_status_by_date + '\'' +
                 '}';
     }
 }
