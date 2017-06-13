@@ -4,13 +4,26 @@
 
     <select id="getOne" resultType="com.nda.model.Stats">
 
-
-        SELECT
-            *
-        FROM query_manager_userquery
-        WHERE id = #{id}
+        SELECT *
+        FROM query_manager_userquery user LEFT JOIN query_manager_querycontrol ctrl ON ctrl.user_query_id = user.id
+        WHERE 1 = 1
+              AND user.id = #{id}
 
     </select>
+
+
+    <insert id="insertTest001">
+
+        INSERT INTO tinkerbell.query_manager_userquery (query_text, pub_date, query_continuation, query_response, query_route, query_type, query_blockkeywords, query_work_status, worker, query_qc, query_work_type, serviceCode, update_date, qm_key, dialogDomain)
+        VALUES
+
+            (#{query_text}, '2017-04-24 05:13:19.000000', 0,
+                            '자동차 추천경로를 알려드릴게요. 분당수서간도시고속화도로, 경부고속도로, 삼일대로을 거치는 경로로 29.9Km 50분이 소요됩니다.', 1,
+                            'informResponse', '', 1, '', 900, 0, 'ClovaApp', '2017-05-18 01:21:37.068435', '경복궁까지어떻게가2',
+             'test');
+
+
+    </insert>
 
 
     <!--오늘의 qc_count증가량 and 날짜별 query_work_stats을 insert한다-->
@@ -25,7 +38,6 @@
     <!--어제 날짜까지의 의 qc_count를 fetch-->
     <select id="getOne_query_manager_userquery_count_until_yesterday" resultType="hashmap">
 
-
         SELECT
             sum(query_count) AS qc_count_sum,
             dd.*
@@ -37,65 +49,229 @@
 
     </select>
 
-    <select id="getList" resultType="com.nda.model.Stats">
+
+    <select id="getQueryControlHistoryList" resultType="com.nda.model.Stats">
 
 
-        select aaa.* from (
+        SELECT *
+        FROM query_manager_querycontrolhistory his left JOIN query_manager_querycontrol ctrl on ctrl.user_query_id =
+        his.id
+        WHERE 1=1
 
-            select
-
-                IFNULL( (select sum(count.query_count) from query_manager_userquery_count_by_date count where 1=1     and user.id = count.user_query_id
-                    <if test="startDate != '' and endDate !='' ">
-                        and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
-                    </if>
-                    GROUP BY count.user_query_id) , 0) as qc_sum
-                , user.*
-                , ctrl.query_blocked
-                , ctrl.output_route
-                ,IFNULL(  (select query_work_status from query_manager_userquery_count_by_date count where 1=1 and user.id = count.user_query_id  and count.qc_counted_date &lt;= #{endDate} order by count.qc_counted_date desc limit 1),0)
-                as query_work_status_by_date
-
-                ,IFNULL(  (select query_route from query_manager_userquery_count_by_date count where 1=1 and user.id = count.user_query_id  and count.qc_counted_date &lt;= #{endDate} order by count.qc_counted_date desc limit 1),0)
-                as query_route_by_date
-
-
-            from query_manager_userquery user left JOIN query_manager_querycontrol ctrl on ctrl.user_query_id = user.id
-
-            ) aaa
-
-        where 1=1
-
-        <if test="searchWord != '' and searchColumn =='query_text' ">
-            and aaa.query_text LIKE #{searchWord}
+        <if test="editor != '' and editor !=null ">
+            and his.editor = #{editor}
         </if>
 
-        <if test="searchWord != '' and searchColumn =='query_response' ">
-            and aaa.query_response LIKE #{searchWord}
+
+        <if test="query_id != '' and query_id !=null ">
+            and his.query_id = #{query_id}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='query_text' ">
+            and his.query_text LIKE #{searchWord}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='qm_key' ">
+            and his.qm_key LIKE #{searchWord}
         </if>
 
         <if test="query_type != '' and query_type !=null ">
-            and aaa.query_type = #{query_type}
+            and his.query_type = #{query_type}
         </if>
 
         <if test="query_continuation != ''  and query_continuation !=null ">
-            and aaa.query_continuation = #{query_continuation}
+            and his.query_continuation = #{query_continuation}
         </if>
 
         <if test="query_work_status != ''  and query_work_status !=null ">
-            and aaa.query_work_status_by_date = #{query_work_status}
+            and his.query_work_status = #{query_work_status}
         </if>
 
-        <if test="query_route != '' and query_route !=null ">
-            and aaa.query_route_by_date = #{query_route}
+
+        <if test="action != ''  and action !=null ">
+            and his.action = #{action}
         </if>
 
 
         <if test="output_route != '' and output_route !=null ">
-            and aaa.output_route = #{output_route}
+            and his.output_route = #{output_route}
         </if>
 
         <if test="pub_date != '' and pub_date !=null">
-            and aaa.pub_date &gt; #{pub_date}
+            and his.pub_date &gt; #{pub_date}
+        </if>
+
+        <choose>
+
+            <when test="boolQueryReplace == true">
+                and ctrl.query_replace != ''
+            </when>
+
+        </choose>
+
+
+        <if test="dialogDomains != '' and dialogDomains !=null">
+            and his.dialogDomain in
+
+            <foreach collection="arrDialogDomain" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
+
+        order by his.${sortColumn} ${sortOrder}
+
+        <if test="rows != '' and rows !=null ">
+            LIMIT #{startNo} , #{rows}
+        </if>
+
+
+    </select>
+
+    <!--sldkflsdkf -->
+    <select id="getQueryControlHistoryListTotalCount" resultType="int">
+
+
+        SELECT count(*)
+        FROM query_manager_querycontrolhistory his left JOIN query_manager_querycontrol ctrl on ctrl.user_query_id =
+        his.id
+        WHERE 1=1
+
+        <if test="editor != '' and editor !=null ">
+            and his.editor = #{editor}
+        </if>
+
+
+        <if test="query_id != '' and query_id !=null ">
+            and his.query_id = #{query_id}
+        </if>
+
+
+        <if test="searchWord != '' and searchColumn =='query_text' ">
+            and his.query_text LIKE #{searchWord}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='qm_key' ">
+            and his.qm_key LIKE #{searchWord}
+        </if>
+
+        <if test="query_type != '' and query_type !=null ">
+            and his.query_type = #{query_type}
+        </if>
+
+        <if test="query_continuation != ''  and query_continuation !=null ">
+            and his.query_continuation = #{query_continuation}
+        </if>
+
+        <if test="query_work_status != ''  and query_work_status !=null ">
+            and his.query_work_status = #{query_work_status}
+        </if>
+
+        <if test="action != ''  and action !=null ">
+            and his.action = #{action}
+        </if>
+
+
+        <if test="output_route != '' and output_route !=null ">
+            and his.output_route = #{output_route}
+        </if>
+
+        <if test="pub_date != '' and pub_date !=null">
+            and his.pub_date &gt; #{pub_date}
+        </if>
+
+        <choose>
+
+            <when test="boolQueryReplace == true">
+                and ctrl.query_replace != ''
+            </when>
+
+        </choose>
+
+
+        <if test="dialogDomains != '' and dialogDomains !=null">
+            and his.dialogDomain in
+
+            <foreach collection="arrDialogDomain" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
+
+    </select>
+
+
+    <select id="getList" resultType="com.nda.model.Stats">
+
+
+        select
+
+        <if test="bCheckQueryCountByDate == 1 ">
+            IFNULL( (select sum(count.query_count) from query_manager_userquery_count_by_date count where 1=1 and
+            user.id =
+            count.user_query_id
+            <if test="startDate != '' and endDate !='' ">
+                and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
+            </if>
+            GROUP BY count.user_query_id) , 0) as qc_by_date ,
+        </if>
+        user.*
+        , ctrl.query_blocked
+        , ctrl.query_replace
+        , ctrl.output_route
+
+        from query_manager_userquery user left JOIN query_manager_querycontrol ctrl on ctrl.user_query_id = user.id
+
+
+        where 1=1
+
+        <if test="searchWord != '' and searchColumn =='query_text' ">
+            and query_text LIKE #{searchWord}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='qm_key' ">
+            and qm_key LIKE #{searchWord}
+        </if>
+
+        <if test="query_type != '' and query_type !=null ">
+            and query_type = #{query_type}
+        </if>
+
+        <if test="query_continuation != ''  and query_continuation !=null ">
+            and query_continuation = #{query_continuation}
+        </if>
+
+        <if test="query_work_status != ''  and query_work_status !=null ">
+            and query_work_status = #{query_work_status}
+        </if>
+
+        <!--<if test="query_route != '' and query_route !=null ">
+            and query_route_by_date = #{query_route}
+        </if>-->
+
+
+        <if test="output_route != '' and output_route !=null ">
+            and output_route = #{output_route}
+        </if>
+
+        <if test="pub_date != '' and pub_date !=null">
+            and pub_date &gt; #{pub_date}
+        </if>
+
+        <choose>
+
+            <when test="boolQueryReplace == true">
+                and ctrl.query_replace != ''
+            </when>
+
+        </choose>
+
+        <if test="dialogDomains != '' and dialogDomains !=null">
+            and dialogDomain in
+
+            <foreach collection="arrDialogDomain" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
         </if>
 
 
@@ -105,22 +281,88 @@
             LIMIT #{startNo} , #{rows}
         </if>
 
-
-
     </select>
 
 
+    <select id="getListMinimal" resultType="com.nda.model.Stats">
 
+
+        select
+        user.*
+
+        from query_manager_userquery user
+
+
+        where 1=1
+
+        <if test="searchWord != '' and searchColumn =='query_text' ">
+            and user.query_text LIKE #{searchWord}
+        </if>
+
+        <if test="searchWord != '' and searchColumn =='qm_key' ">
+            and user.qm_key LIKE #{searchWord}
+        </if>
+
+        <if test="query_type != '' and query_type !=null ">
+            and user.query_type = #{query_type}
+        </if>
+
+        <if test="query_continuation != ''  and query_continuation !=null ">
+            and user.query_continuation = #{query_continuation}
+        </if>
+
+        <if test="query_work_status != ''  and query_work_status !=null ">
+            and user.query_work_status = #{query_work_status}
+        </if>
+
+        <!--<if test="query_route != '' and query_route !=null ">
+            and user.query_route_by_date = #{query_route}
+        </if>-->
+
+
+        <if test="output_route != '' and output_route !=null ">
+            and user.output_route = #{output_route}
+        </if>
+
+        <if test="pub_date != '' and pub_date !=null">
+            and user.pub_date &gt; #{pub_date}
+        </if>
+
+        <if test="query_replace != ''">
+            and query_replace = #{query_replace}
+        </if>
+
+
+        <if test="dialogDomains != '' and dialogDomains !=null">
+            and dialogDomain in
+
+            <foreach collection="arrDialogDomain" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
+
+
+        order by ${sortColumn} ${sortOrder}
+
+        <if test="rows != '' and rows !=null ">
+            LIMIT #{startNo} , #{rows}
+        </if>
+
+    </select>
 
 
     <select id="getListTotalCount" resultType="int">
 
 
-        select count(*) from query_manager_userquery aaa
+        select
+
+        count(user.id)
+
+
+        from query_manager_userquery user left JOIN query_manager_querycontrol ctrl on ctrl.user_query_id = user.id
 
 
         where 1=1
-
 
         <if test="searchWord != '' and searchColumn =='query_text' ">
             and query_text LIKE #{searchWord}
@@ -130,35 +372,103 @@
             and query_response LIKE #{searchWord}
         </if>
 
-        <if test="query_type != ''">
-            and query_type LIKE #{query_type}
+        <if test="query_type != '' and query_type !=null ">
+            and query_type = #{query_type}
         </if>
 
-        <if test="query_continuation != ''">
+        <if test="query_continuation != ''  and query_continuation !=null ">
             and query_continuation = #{query_continuation}
         </if>
 
-        <if test="query_work_status != ''">
+        <if test="query_work_status != ''  and query_work_status !=null ">
             and query_work_status = #{query_work_status}
         </if>
 
-        <if test="query_route != ''">
-            and query_route = #{query_route}
+        <!--<if test="query_route != '' and query_route !=null ">
+            and query_route_by_date = #{query_route}
+        </if>-->
+
+
+        <if test="output_route != '' and output_route !=null ">
+            and output_route = #{output_route}
         </if>
 
-        <if test="pub_date != ''">
+        <if test="pub_date != '' and pub_date !=null">
             and pub_date &gt; #{pub_date}
         </if>
 
+        <if test="query_replace != ''">
+            and query_replace = #{query_replace}
+        </if>
+
+
+        <if test="dialogDomains != '' and dialogDomains !=null">
+            and dialogDomain in
+
+            <foreach collection="arrDialogDomain" item="item" index="index" separator="," open="(" close=")">
+                #{item}
+            </foreach>
+        </if>
 
     </select>
 
 
     <select id="getQueryType" resultType="string">
 
-
         SELECT DISTINCT query_type
         FROM query_manager_userquery
+
+    </select>
+
+
+    <select id="getActionType" resultType="string">
+
+        SELECT DISTINCT action
+        FROM query_manager_querycontrolhistory
+
+    </select>
+
+
+    <select id="getListTest" resultType="com.nda.model.Stats">
+
+        SELECT
+
+
+            user.*,
+            ctrl.query_blocked,
+            ctrl.query_replace,
+            ctrl.output_route
+
+        FROM query_manager_userquery user LEFT JOIN query_manager_querycontrol ctrl ON ctrl.user_query_id = user.id
+
+
+        LIMIT 0,100000
+    </select>
+
+
+    <select id="getDialogDomain" resultType="string">
+
+        SELECT DISTINCT dialogDomain
+        FROM query_manager_userquery
+
+    </select>
+
+
+    <select id="getQueryReplace" resultType="string">
+
+        SELECT DISTINCT query_replace
+        FROM query_manager_querycontrol
+
+    </select>
+
+
+    <select id="getQueryTypeCount" resultType="hashmap">
+
+        SELECT
+            count(*) AS count,
+            query_type
+        FROM query_manager_userquery
+        GROUP BY query_type
 
 
     </select>
@@ -170,7 +480,6 @@
         FROM query_manager_userquery
 
         /* order by ${sortColumn} ${sortOrder}*/
-
 
     </select>
 
@@ -201,75 +510,3 @@
 
 
 </mapper>
-
-<!--
-
-
-<select id="getList" resultType="com.nda.model.Stats">
-
-select * from (
-
-select sum(count.query_count) as qc_sum, aa.*
-, con.query_blocked
-,con.output_route
-
-
-from query_manager_userquery aa LEFT JOIN
-query_manager_userquery_count_by_date count on
-aa.id = count.user_query_id
-
-<if test="startDate != '' and endDate !='' ">
-    and count.qc_counted_date &gt;= #{startDate} and count.qc_counted_date &lt;= #{endDate}
-</if>
-
-left JOIN query_manager_querycontrol con on con.user_query_id = aa.id
-
-GROUP BY count.user_query_id
-
-) aaa
-
-where 1=1
-
-<if test="searchWord != '' and searchColumn =='query_text' ">
-    and aaa.query_text LIKE #{searchWord}
-</if>
-
-<if test="searchWord != '' and searchColumn =='query_response' ">
-    and aaa.query_response LIKE #{searchWord}
-</if>
-
-<if test="query_type != '' and query_type !=null ">
-    and aaa.query_type = #{query_type}
-</if>
-
-<if test="query_continuation != ''  and query_continuation !=null ">
-    and aaa.query_continuation = #{query_continuation}
-</if>
-
-<if test="query_work_status != ''  and query_work_status !=null ">
-    and aaa.query_work_status = #{query_work_status}
-</if>
-
-<if test="query_route != '' and query_route !=null ">
-    and aaa.query_route = #{query_route}
-</if>
-
-
-<if test="output_route != '' and output_route !=null ">
-    and aaa.output_route = #{output_route}
-</if>
-
-<if test="pub_date != '' and pub_date !=null">
-    and aaa.pub_date &gt; #{pub_date}
-</if>
-
-
-order by ${sortColumn} ${sortOrder}
-
-<if test="rows != '' and rows !=null ">
-    LIMIT #{startNo} , #{rows}
-</if>
-
-
-</select>
--->

@@ -20,7 +20,7 @@
                 // have to use synchronous here, else the function
                 // will return before the data is fetched
                 async: false,
-                url: "/getGraphData",
+                url: "/gridmain/getGraphData",
                 dataType: "json",
                 success: function (data) {
                     for (var i = 0; i < data.length; i++) {

@@ -158,10 +158,21 @@ public class ApachePOIExcelUtil {
             String query_response = (String) stats.getQuery_response();
             cell.setCellValue((String) query_response);
 
+            //변경쿼리
+            cell = row.createCell(colNum++);
+            String query_replace = (String) stats.getQuery_replace();
+            cell.setCellValue((String) query_replace);
+
+
+            //대화도메인
+            cell = row.createCell(colNum++);
+            String dialogDomain = (String) stats.getDialogDomain();
+            cell.setCellValue((String) dialogDomain);
+
 
             //기존라우팅
             cell = row.createCell(colNum++);
-            String query_route_by_date = (String) stats.getQuery_route_by_date();
+            String query_route_by_date = (String) stats.getQuery_route();
             cell.setCellValue(CommonUtils.getRouteName(query_route_by_date));
 
 
@@ -183,7 +194,7 @@ public class ApachePOIExcelUtil {
 
             //query_work_status
             cell = row.createCell(colNum++);
-            String query_work_status_by_date = (String) stats.getQuery_work_status_by_date();
+            String query_work_status_by_date = (String) stats.getQuery_work_status();
             if ( query_work_status_by_date.equals("1")){
                 query_work_status_by_date="작업완료";
             }else{
@@ -229,6 +240,8 @@ public class ApachePOIExcelUtil {
 
 
             rowNum++;
+
+            System.out.println("export "+ rowNum + "line complete");
         }
 
         return  workbook;

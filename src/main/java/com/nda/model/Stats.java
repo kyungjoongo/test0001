@@ -1,6 +1,10 @@
 package com.nda.model;
 
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.List;
+
 public class Stats {
 
     public int qc_sum;
@@ -17,6 +21,7 @@ public class Stats {
     private int qcCount;
     private int rows;
     private int id;
+    private int query_id;
     private String query_text;
     private String pub_date;
     private String query_text_and_response;
@@ -37,19 +42,52 @@ public class Stats {
     private String todaysDate;
     private int query_blocked;
     private String query_work_status_by_date;
+    //dialogDomain
+    private String dialogDomain;
+    private String dialogDomains;
+    private String query_replace;
+    private boolean boolQueryReplace;
+    private String qm_key;
+    private String[] arrDialogDomain;
+    private int qc_total_count;
+    private int qc_by_date;
+    private String editor;
+    private String tableName;
+    private int bCheckQueryCountByDate;
+    private String searchType;
 
+    private String action;
 
+    public String getAction() {
+        return action;
+    }
 
+    public void setAction(String action) {
+        this.action = action;
+    }
 
     public Stats() {
         this.startNo = 0;
+        this.qc_total_count = 0;
         this.pageSize = 0;
+        this.query_replace= "";
         this.page = 0;
+        this.query_id = 0;
+        this.searchType= "";
+        this.qm_key = "";
+        this.qc_by_date = 0;
+        this.editor = "";
+        this.action= "";
+        this.bCheckQueryCountByDate = -1;
+        this.boolQueryReplace= false;
         SortColumn = "id";
         SortOrder = "asc";
         this.searchWord = "";
         this.searchColumn = "";
+        this.dialogDomain = "";
+        this.query_replace = "";
         this.startDate = "";
+        this.dialogDomains = "";
         this.endDate = "";
         this.todaysQcCount = 0;
         this.qcCount = 0;
@@ -74,8 +112,104 @@ public class Stats {
         this.output_route = "";
     }
 
+    public String getSearchType() {
+        return searchType;
+    }
+
+    public void setSearchType(String searchType) {
+        this.searchType = searchType;
+    }
+
+    public boolean isBoolQueryReplace() {
+        return boolQueryReplace;
+    }
+
+    public void setBoolQueryReplace(boolean boolQueryReplace) {
+        this.boolQueryReplace = boolQueryReplace;
+    }
 
 
+    public int getQuery_id() {
+        return query_id;
+    }
+
+    public void setQuery_id(int query_id) {
+        this.query_id = query_id;
+    }
+
+    public int getbCheckQueryCountByDate() {
+        return bCheckQueryCountByDate;
+    }
+
+    public void setbCheckQueryCountByDate(int bCheckQueryCountByDate) {
+        this.bCheckQueryCountByDate = bCheckQueryCountByDate;
+    }
+
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getEditor() {
+        return editor;
+    }
+
+    public void setEditor(String editor) {
+        this.editor = editor;
+    }
+
+    public int getQc_by_date() {
+        return qc_by_date;
+    }
+
+    public void setQc_by_date(int qc_by_date) {
+        this.qc_by_date = qc_by_date;
+    }
+
+    public String getQm_key() {
+        return qm_key;
+    }
+
+    public void setQm_key(String qm_key) {
+        this.qm_key = qm_key;
+    }
+
+    public String[] getArrDialogDomain() {
+        return arrDialogDomain;
+    }
+
+    public void setArrDialogDomain(String[] arrDialogDomain) {
+        this.arrDialogDomain = arrDialogDomain;
+    }
+
+
+    public String getDialogDomains() {
+        return dialogDomains;
+    }
+
+    public void setDialogDomains(String dialogDomains) {
+        this.dialogDomains = dialogDomains;
+    }
+
+    public String getQuery_replace() {
+        return query_replace;
+    }
+
+    public void setQuery_replace(String query_replace) {
+        this.query_replace = query_replace;
+    }
+
+    public String getDialogDomain() {
+        return dialogDomain;
+    }
+
+    public void setDialogDomain(String dialogDomain) {
+        this.dialogDomain = dialogDomain;
+    }
 
     public int getQc_sum() {
         return qc_sum;
@@ -123,6 +257,14 @@ public class Stats {
 
     public void setRows(int rows) {
         this.rows = rows;
+    }
+
+    public int getQc_total_count() {
+        return qc_total_count;
+    }
+
+    public void setQc_total_count(int qc_total_count) {
+        this.qc_total_count = qc_total_count;
     }
 
 
@@ -317,8 +459,21 @@ public class Stats {
         return searchWord;
     }
 
+    /**
+     * 서치타입에 따른 서치워드 셋팅
+     * @param searchWord
+     */
     public void setSearchWord(String searchWord) {
-        this.searchWord = searchWord;
+
+        if (this.searchType.equals("contains")) {
+            this.searchWord = (this.makeLikeWord(searchWord));
+        } else if (this.searchType.equals("prefix")) {
+            this.searchWord = (this.makePrefixSearchWord(searchWord));
+        } else if (this.searchType.equals("postfix")) {
+            this.searchWord = (this.makePostfixSearchWord(searchWord));
+        }else{//정확히 일치..
+            this.searchWord = searchWord;
+        }
     }
 
     public int getStartNo() {
@@ -391,6 +546,44 @@ public class Stats {
                 ", query_blocked=" + query_blocked +
                 ", query_work_status_by_date='" + query_work_status_by_date + '\'' +
                 '}';
+    }
+
+
+    /**
+     * 포함일치
+     * @param word
+     * @return
+     */
+    public static String makeLikeWord(String word) {
+        if (StringUtils.isNotEmpty(word)) {
+            word = "%" + word + "%";
+        }
+        return word;
+    }
+
+    /**
+     * 후방일치 searchWord make
+     * @param word
+     * @return
+     */
+    public static String makePostfixSearchWord(String word) {
+        if (StringUtils.isNotEmpty(word)) {
+            word = "%" + word;
+        }
+        return word;
+    }
+
+
+    /**
+     * 전방일치 make
+     * @param word
+     * @return
+     */
+    public static String makePrefixSearchWord(String word) {
+        if (StringUtils.isNotEmpty(word)) {
+            word = word + "%";
+        }
+        return word;
     }
 }
 

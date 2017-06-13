@@ -26,6 +26,7 @@ public class CSVUtils {
         stringBuffer.append(headerDate);
         stringBuffer.append(header);
 
+        int row=1;
         for (Stats statsOne : statsList) {
 
             //기존라우팅
@@ -42,12 +43,18 @@ public class CSVUtils {
             int id = (int) statsOne.getId();
             String queryText = (String) statsOne.getQuery_text();
             String queryResponse = (String) statsOne.getQuery_response();
+
+            //변경쿼리
+            String query_replace = (String) statsOne.getQuery_replace();
+            //대화도메인
+            String dialogDomain = (String) statsOne.getDialogDomain();
+
             String queryRoute = statsOne.getQuery_route();
             queryRoute = CommonUtils.getRouteName(queryRoute);
 
 
-            String outputRoute = statsOne.getQuery_route_by_date();
-            outputRoute = CommonUtils.getRouteName(outputRoute);
+            /*String outputRoute = statsOne.getQuery_route();
+            outputRoute = CommonUtils.getRouteName(outputRoute);*/
 
 
             String queryType = statsOne.getQuery_type();
@@ -61,8 +68,8 @@ public class CSVUtils {
                 strQueryBlocked= "false";
             }
 
-            String qmQueryRoute = statsOne.getQuery_route_by_date();
-            qmQueryRoute = CommonUtils.getRouteName(qmQueryRoute);
+            /*String qmQueryRoute = statsOne.getQuery_route_by_date();
+            qmQueryRoute = CommonUtils.getRouteName(qmQueryRoute);*/
             String worker = statsOne.getWorker();
             int qcCount = (int) statsOne.getQc_sum();
             String pubDate = statsOne.getPub_date();
@@ -70,18 +77,24 @@ public class CSVUtils {
             String cvsString = id
                     + "," + queryText
                     + "," + queryResponse
+                    + "," + query_replace
+                    + "," + dialogDomain
                     + "," + queryRoute
-                    + "," + outputRoute
+                   /* + "," + outputRoute*/
                     + "," + queryType
                     + "," + queryContinuation
                     + "," + queryWorkStatus
                     + "," + strQueryBlocked
-                    + "," + qmQueryRoute
+                    /*+ "," + qmQueryRoute*/
                     + "," + worker
                     + "," + qcCount
                     + "," + pubDate
                     + "\n";
             stringBuffer.append(cvsString);
+
+            row++;
+
+            System.out.println("cvsExport Row==>"+ row);
 
         }
 

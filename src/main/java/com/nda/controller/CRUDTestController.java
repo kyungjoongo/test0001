@@ -37,6 +37,7 @@ public class CRUDTestController {
         return  mav;
     }
 
+
     @RequestMapping("/insertTest")
     public String insertTest() {
         blogDao.insertNewContent("고경준은 관연천재님이신가요??");

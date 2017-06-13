@@ -8,10 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Repository
 public class StatsDAO {
@@ -26,9 +23,18 @@ public class StatsDAO {
     private SqlSession secondSqlSession;*/
 
 
-
     public List<Stats> getList(Stats stats) {
-        List<Stats> arrList = sqlSession.selectList("StatsMapper.getList", stats);
+
+        //멀티플dialogDomain Setting
+        String[] arrDialogDomain = stats.getDialogDomains().split(",");
+        stats.setArrDialogDomain(arrDialogDomain);
+        List<Stats> arrList = new ArrayList<>();
+        try {
+            arrList = sqlSession.selectList("StatsMapper.getList", stats);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 
         List resultList = new ArrayList();
 
@@ -44,6 +50,79 @@ public class StatsDAO {
         }
 
         return resultList;
+    }
+
+
+    public Stats getOne(Stats stats) {
+
+
+        Stats statsOne = sqlSession.selectOne("StatsMapper.getOne", stats);
+        String query_text = (String) statsOne.getQuery_text();
+        String query_response = (String) statsOne.getQuery_response();
+        String query_text_and_response = query_text + ";" + query_response;
+
+        statsOne.setQuery_text_and_response(query_text_and_response);
+
+
+        return statsOne;
+    }
+
+
+    public List<Stats> getListForExport(Stats stats) {
+
+        //멀티플dialogDomain Setting
+        String[] arrDialogDomain = stats.getDialogDomains().split(",");
+        stats.setArrDialogDomain(arrDialogDomain);
+        List<Stats> arrList = new ArrayList<>();
+
+        arrList = sqlSession.selectList("StatsMapper.getListTest", stats);
+
+
+        List resultList = new ArrayList();
+
+        for (Stats statsOne : arrList) {
+
+            String query_text = (String) statsOne.getQuery_text();
+            String query_response = (String) statsOne.getQuery_response();
+            String query_text_and_response = query_text + ";" + query_response;
+
+            statsOne.setQuery_text_and_response(query_text_and_response);
+
+            resultList.add(statsOne);
+        }
+
+        return resultList;
+    }
+
+
+    public List<Stats> getQueryControlHistoryList(Stats stats) {
+
+        //멀티플dialogDomain Setting
+        String[] arrDialogDomain = stats.getDialogDomains().split(",");
+        stats.setArrDialogDomain(arrDialogDomain);
+
+        List<Stats> arrList = sqlSession.selectList("StatsMapper.getQueryControlHistoryList", stats);
+
+        List resultList = new ArrayList();
+
+        for (Stats statsOne : arrList) {
+
+            String query_text = (String) statsOne.getQuery_text();
+            String query_response = (String) statsOne.getQuery_response();
+            String query_text_and_response = query_text + ";" + query_response;
+
+            statsOne.setQuery_text_and_response(query_text_and_response);
+
+            resultList.add(statsOne);
+        }
+
+        return resultList;
+    }
+
+    public int getQueryControlHistoryListTotalCount(Stats stats) {
+
+        int count = sqlSession.selectOne("StatsMapper.getQueryControlHistoryListTotalCount", stats);
+        return count;
     }
 
 
@@ -75,14 +154,6 @@ public class StatsDAO {
 
         return arrList2;
     }
-
-
-    public Stats getOne(Stats stats) {
-        Stats resultOne = sqlSession.selectOne("StatsMapper.getOne", stats);
-
-        return resultOne;
-    }
-
 
     /**
      * 어제 날짜 qc_count를 fetch
@@ -167,6 +238,59 @@ public class StatsDAO {
         result = sqlSession.update("StatsMapper.updateOne", paramMap);
 
         return result;
+    }
+
+
+    public List getQueryTypeCount() {
+        List arrList = sqlSession.selectList("StatsMapper.getQueryTypeCount");
+        return arrList;
+    }
+
+    //getActionType
+    public List getActionType() {
+        List arrList = sqlSession.selectList("StatsMapper.getActionType");
+        return arrList;
+    }
+
+
+    public List getDialogDomain() {
+        List<String> arrList = sqlSession.selectList("StatsMapper.getDialogDomain");
+
+        List<String> arrList2 = new ArrayList();
+        for (String dialogDomainOne : arrList) {
+
+            if (StringUtils.isNotEmpty(dialogDomainOne)) {
+                arrList2.add(dialogDomainOne);
+            }
+        }
+
+        return arrList2;
+
+    }
+
+    public List getQueryReplace() {
+        List<String> arrList = sqlSession.selectList("StatsMapper.getQueryReplace");
+
+        List<String> arrList2 = new ArrayList();
+        for (String arrOne : arrList) {
+
+            if (StringUtils.isNotEmpty(arrOne)) {
+                arrList2.add(arrOne);
+            }
+        }
+
+        return arrList2;
+
+    }
+
+
+    public int insertTest001(Stats stats) {
+
+
+        int result = sqlSession.insert("StatsMapper.insertTest001", stats);
+
+        return result;
+
     }
 
 

@@ -34,35 +34,72 @@ public class StatsController {
 
     private static final Logger logger = (Logger) LoggerFactory.getLogger(StatsController.class);
 
-        @Autowired
-        private StatsDAO statsDAO;
+    @Autowired
+    private StatsDAO statsDAO;
 
     @RequestMapping("/_list")
-    public String list(Model model,
-                       @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
+    public String _list(Model model,
+                        @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
 
         return "/stats/_list";
     }
 
-    @RequestMapping("/list")
-    public String list2(Model model,
-                        @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
 
+    @RequestMapping("/list3")
+    public String list3(Model model,
+                        @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
+        return "/stats/list3";
+    }
+
+
+    @RequestMapping("/list")
+    public String list(Model model,
+                       @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
 
         List<String> queryType = statsDAO.getQueryType();
+        model.addAttribute("quertType", queryType);
 
-        model.addAttribute("quertType",queryType );
+        List<String> dialogDomain = statsDAO.getDialogDomain();
+        model.addAttribute("dialogDomain", dialogDomain);
 
+        List<String> query_replace = statsDAO.getQueryReplace();
+        model.addAttribute("query_replace", query_replace);
 
         return "/stats/list";
     }
 
 
+    @RequestMapping("/historyList")
+    public String historyList(Model model,
+                              @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
+        List<String> queryType = statsDAO.getQueryType();
+        model.addAttribute("quertType", queryType);
+
+
+        List<String> actionType = statsDAO.getActionType();
+        model.addAttribute("actionType", actionType);
+
+
+        List<String> dialogDomain = statsDAO.getDialogDomain();
+        model.addAttribute("dialogDomain", dialogDomain);
+
+        List<String> query_replace = statsDAO.getQueryReplace();
+        model.addAttribute("query_replace", query_replace);
+        return "/stats/historyList";
+    }
+
+    @RequestMapping("/historyList2")
+    public String historyList2(Model model,
+                               @RequestParam(value = "name", required = false, defaultValue = "World") String name) {
+
+        return "/stats/historyList2";
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     @RequestMapping(value = "/getList")
     public @ResponseBody
     String getList(
-              @ModelAttribute Stats stats
+            @ModelAttribute Stats stats
     ) throws JsonGenerationException, JsonMappingException, IOException {
 
 
@@ -74,7 +111,52 @@ public class StatsController {
             stats.setSortColumn("query_text");
         }
 
-        stats.setSearchWord(this.makeLikeWord(stats.getSearchWord()));
+
+
+        String pub_date = this.setPreviusPubDate(stats.getPub_date());
+
+        int startNo = (stats.getPage() - 1) * stats.getRows();
+
+        stats.setStartNo(startNo);
+        stats.setPub_date(pub_date);
+        HashMap map = new HashMap();
+        try {
+            List<Stats> arrList = statsDAO.getList(stats);
+            int totalCount = statsDAO.getListTotalCount(stats);
+
+            map.put("page", stats.getPage());
+            map.put("arrList", arrList);
+            //totalCounts
+            map.put("records", totalCount);
+
+            //total pages
+            map.put("total", Math.ceil(Double.parseDouble(String.valueOf(totalCount)) / stats.getRows()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            ;
+        }
+
+        return JSONValue.toJSONString(map);
+
+    }
+
+
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    @RequestMapping(value = "/getHistoryList")
+    public @ResponseBody
+    String getHistoryList(
+            @ModelAttribute Stats stats
+    ) throws JsonGenerationException, JsonMappingException, IOException {
+
+
+        if (stats.getSearchColumn().equals("query_text_and_response")) {
+            stats.setSortColumn("query_text");
+        }
+
+        if (stats.getSortColumn().equals("query_text_and_response")) {
+            stats.setSortColumn("query_text");
+        }
 
         String pub_date = this.setPreviusPubDate(stats.getPub_date());
 
@@ -83,8 +165,8 @@ public class StatsController {
         stats.setStartNo(startNo);
         stats.setPub_date(pub_date);
 
-        List<Stats> arrList = statsDAO.getList(stats);
-        int totalCount = statsDAO.getListTotalCount(stats);
+        List<Stats> arrList = statsDAO.getQueryControlHistoryList(stats);
+        int totalCount = statsDAO.getQueryControlHistoryListTotalCount(stats);
 
         HashMap map = new HashMap();
         map.put("page", stats.getPage());
@@ -99,14 +181,23 @@ public class StatsController {
 
     }
 
-    public static String makeLikeWord(String word){
 
-        if (StringUtils.isNotEmpty(word)) {
-            word = "%" + word + "%";
-        }
+    @RequestMapping("/detail")
+    public String detail(Model model,
+                         @ModelAttribute Stats stats) {
 
-        return word;
+        Stats resultStatsOne= statsDAO.getOne(stats);
+        model.addAttribute("result", resultStatsOne);
+
+
+
+        return "/stats/detail";
     }
+
+
+
+
+
 
     public static String setPreviusPubDate(String pub_date) {
 
@@ -175,8 +266,8 @@ public class StatsController {
      */
     @RequestMapping("/exportToExcel")
     public void exportToExcel(HttpServletResponse response
-            ,@ModelAttribute Stats stats
-    ) {
+            , @ModelAttribute Stats stats
+    ) throws Exception {
 
         String outputFileName = "NaverDialogAppStatsExcelExport" + CommonUtils.getTodayDate();
         response.setContentType("application/vnd.ms-excel");
@@ -191,22 +282,15 @@ public class StatsController {
             stats.setSortColumn("query_text");
         }
 
-        stats.setSearchWord(this.makeLikeWord(stats.getSearchWord()));
+
+        resultList = statsDAO.getList(stats);
+
+        XSSFWorkbook workbook = ApachePOIExcelUtil.convertArrayListToExcelSheet(resultList, stats.getStartDate(), stats.getEndDate());
+
+        workbook.write(response.getOutputStream()); // Write workbook to response.
+        workbook.close();
 
 
-        try {
-
-            resultList = statsDAO.getList(stats);
-
-            XSSFWorkbook workbook = ApachePOIExcelUtil.convertArrayListToExcelSheet(resultList, stats.getStartDate(), stats.getEndDate());
-
-            workbook.write(response.getOutputStream()); // Write workbook to response.
-            workbook.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        }
     }
 
 
@@ -218,8 +302,8 @@ public class StatsController {
      */
     @RequestMapping("/exportToCsv")
     public void exportToCsv(HttpServletResponse response
-            ,@ModelAttribute Stats stats
-    ) throws Exception {
+            , @ModelAttribute Stats stats
+    ) {
 
         String outputFileName = "NaverDialogAppStatsCVSExport" + CommonUtils.getTodayDate();
         response.setContentType("application/vnd.ms-excel");
@@ -231,13 +315,12 @@ public class StatsController {
             stats.setSortColumn("query_text");
         }
 
-        stats.setSearchWord(this.makeLikeWord(stats.getSearchWord()));
 
         try {
 
 
             OutputStream outputStream = response.getOutputStream();
-            List<Stats> arrList = statsDAO.getList(stats);
+            List arrList = statsDAO.getList(stats);
 
             String outputResult = CSVUtils.makeCSVString(arrList, stats.getStartDate(), stats.getEndDate());
 
@@ -296,6 +379,55 @@ public class StatsController {
 
         map.put("result", result);
         return JSONValue.toJSONString(map);
+    }
+
+
+    @RequestMapping("/getQueryTypeCount")
+    public @ResponseBody
+    String getQueryTypeCount() throws JsonGenerationException, JsonMappingException, IOException {
+        List arrList = statsDAO.getQueryTypeCount();
+        return JSONValue.toJSONString(arrList);
+    }
+
+
+    @RequestMapping("/getActionType")
+    public @ResponseBody
+    String getActionType() throws JsonGenerationException, JsonMappingException, IOException {
+        List arrList = statsDAO.getActionType();
+        return JSONValue.toJSONString(arrList);
+    }
+
+
+
+    @RequestMapping("/getDialogDomain")
+    public @ResponseBody
+    String getDialogDomain() throws JsonGenerationException, JsonMappingException, IOException {
+        List arrList = statsDAO.getDialogDomain();
+        return JSONValue.toJSONString(arrList);
+    }
+
+
+    @RequestMapping("/getQueryReplace")
+    public @ResponseBody
+    String getQueryReplace() throws JsonGenerationException, JsonMappingException, IOException {
+        List arrList = statsDAO.getQueryReplace();
+        return JSONValue.toJSONString(arrList);
+    }
+
+
+    @RequestMapping("/queryTypeGraph")
+    public String queryTypeGraph() {
+
+
+        return "/stats/queryTypeGraph";
+    }
+
+
+    @RequestMapping("/queryTypePieChart")
+    public String queryTypePieChart() {
+
+
+        return "/stats/queryTypePieChart";
     }
 
 

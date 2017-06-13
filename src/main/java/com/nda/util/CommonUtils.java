@@ -1,5 +1,7 @@
 package com.nda.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -102,6 +104,13 @@ public class CommonUtils {
         }
 
         return  query_route_by_date;
+    }
+
+    public static String makeLikeWord(String word){
+        if (StringUtils.isNotEmpty(word)) {
+            word = "%" + word + "%";
+        }
+        return word;
     }
 
 }

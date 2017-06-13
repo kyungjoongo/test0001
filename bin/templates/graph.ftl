@@ -43,10 +43,11 @@
 
             $.jqplot.config.enablePlugins = true;
             //var s1 = [2, 6, 7, 10];
-            var s1 = s2;
+
+            //name
             var ticks = tickResult;
 
-            plot1 = $.jqplot('chart1', [s1], {
+            plot1 = $.jqplot('chart1', [s2], {
                 // Only animate if we're not using excanvas (not in IE 7 or IE 8)..
                 animate: !$.jqplot.use_excanvas,
                 seriesDefaults: {
@@ -61,6 +62,10 @@
                 },
                 highlighter: {show: true}
             });
+
+
+
+
 
             $('#chart1').bind('jqplotDataClick',
                     function (ev, seriesIndex, pointIndex, data) {

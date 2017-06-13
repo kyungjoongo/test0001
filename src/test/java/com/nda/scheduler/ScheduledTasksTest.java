@@ -1,6 +1,6 @@
 package com.nda.scheduler;
 
-import com.nda.TinkerbellApplication;
+import com.nda.NaverDialogApplication;
 import com.nda.dao.StatsDAO;
 import com.nda.model.Stats;
 import com.nda.util.CommonUtils;
@@ -30,7 +30,7 @@ import static com.nda.util.CommonUtils.getTodayDateYyyymmdd;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = TinkerbellApplication.class)
+@SpringBootTest(classes = NaverDialogApplication.class)
 public class ScheduledTasksTest {
 
     private static final Logger log = LoggerFactory.getLogger(ScheduledTasksTest.class);

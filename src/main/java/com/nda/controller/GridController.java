@@ -143,9 +143,9 @@ public class GridController {
 	
 	
 	@RequestMapping("/getGraphData")
-	public @ResponseBody String getGraphData()
+	public @ResponseBody String getGraphData() throws JsonGenerationException, JsonMappingException, IOException {
 			
-			throws JsonGenerationException, JsonMappingException, IOException {
+
 
 		List arrList = blogDao.getGraphData();
 
